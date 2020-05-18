@@ -1,115 +1,121 @@
-use std::io;
+use std::net::{TcpStream, Shutdown};
+use std::io::prelude::*;
 
-pub fn dc() {
-		let mut stack: Vec<i32> = Vec::new();
+pub fn dc(line: String, mut stack: Vec<i32>, stream: &TcpStream) -> Vec<i32> {
+	let mut number: i32;
 
-		'dc: loop {
-			let mut line = String::new();
-			let mut number: i32;
-
-			io::stdin().read_line(&mut line).expect("Failed to read line");
-			for cmd in line.split_whitespace() {
-				let c = cmd.chars().next().unwrap();
-				if c.is_digit(10) {
-					number = cmd.parse().expect("NaN");
-					stack.push(number);
-				}
-				else  {
-					match c {
-						'+' => stack = add(stack),
-						'-' => stack = substracte(stack),
-						'*' => stack = multiply(stack),
-						'/' => stack = divide(stack),
-						'%' => stack = modular(stack),
-						'P' => stack = pop_stack(stack),
-						'p' => peek_stack(&stack),
-						'f' => print_stack(&stack),
-						'q' => break 'dc,
-						_ => println!("unk")
-					}
-				}
+	for cmd in line.split_whitespace() {
+		let c = cmd.chars().next().unwrap();
+		if c.is_digit(10) {
+			number = cmd.parse().expect("NaN");
+			stack.push(number);
+		}
+		else  {
+			match c {
+				'+' => stack = add(stack, stream),
+				'-' => stack = substracte(stack, stream),
+				'*' => stack = multiply(stack, stream),
+				'/' => stack = divide(stack, stream),
+				'%' => stack = modular(stack, stream),
+				'P' => stack = pop_stack(stack, stream),
+				'p' => peek_stack(&stack, stream),
+				'f' => print_stack(&stack, stream),
+				'q' => quit(stream),
+				_ => continue,
 			}
 		}
-
 	}
+	stack
+}
 
-fn add (mut stack: Vec<i32>) -> Vec<i32> {
+fn add (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
     if stack.len() >= 2 {
         let n1 : i32 = stack.pop().unwrap();
         let n2 : i32 = stack.pop().unwrap();
         stack.push(n2 + n1);
     }
     else {
-        println!("dc: stack empty");
+			stream.write("dc: stack empty".as_bytes()).expect("Error");
     }
     stack
 }
-fn substracte (mut stack: Vec<i32>) -> Vec<i32> {
-    if stack.len() >= 2 {
-        let n1 : i32 = stack.pop().unwrap();
-        let n2 : i32 = stack.pop().unwrap();
-        stack.push(n2 - n1);
-    }
-    else {
-        println!("dc: stack empty");
-    }
-    stack
+
+fn substracte (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
+	if stack.len() >= 2 {
+		let n1 : i32 = stack.pop().unwrap();
+		let n2 : i32 = stack.pop().unwrap();
+		stack.push(n2 - n1);
+	}
+	else {
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
+	}
+	stack
 }
-fn multiply (mut stack: Vec<i32>) -> Vec<i32> {
-    if stack.len() >= 2 {
-        let n1 : i32 = stack.pop().unwrap();
-        let n2 : i32 = stack.pop().unwrap();
-        stack.push(n2 * n1);
-    }
-    else {
-        println!("dc: stack empty");
-    }
-    stack
+
+fn multiply (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
+	if stack.len() >= 2 {
+		let n1 : i32 = stack.pop().unwrap();
+		let n2 : i32 = stack.pop().unwrap();
+		stack.push(n2 * n1);
+	}
+	else {
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
+	}
+	stack
 }
-fn divide (mut stack: Vec<i32>) -> Vec<i32> {
-    if stack.len() >= 2 {
-        let n1 : i32 = stack.pop().unwrap();
-        let n2 : i32 = stack.pop().unwrap();
-        stack.push(n2 + n1);
-    }
-    else {
-        println!("dc: stack empty");
-    }
-    stack
+
+fn divide (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
+	if stack.len() >= 2 {
+		let n1 : i32 = stack.pop().unwrap();
+		let n2 : i32 = stack.pop().unwrap();
+		stack.push(n2 + n1);
+	}
+	else {
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
+	}
+	stack
 }
-fn modular (mut stack: Vec<i32>) -> Vec<i32> {
-    if stack.len() >= 2 {
-        let n1 : i32 = stack.pop().unwrap();
-        let n2 : i32 = stack.pop().unwrap();
-        stack.push(n2 + n1);
-    }
-    else {
-        println!("dc: stack empty");
-    }
-    stack
+
+fn modular (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
+	if stack.len() >= 2 {
+		let n1 : i32 = stack.pop().unwrap();
+		let n2 : i32 = stack.pop().unwrap();
+		stack.push(n2 + n1);
+	}
+	else {
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
+	}
+	stack
 }
-fn pop_stack (mut stack: Vec<i32>) -> Vec<i32> {
+
+fn pop_stack (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
 	if stack.len() > 0 {
-		peek_stack(&stack);
+		peek_stack(&stack, stream);
 		stack.pop();
 	}
 	else {
-		println!("dc: stack empty");
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
 	}
-    stack
+	stack
 }
-fn peek_stack (stack: &Vec<i32>) {
+
+fn peek_stack (stack: &Vec<i32>, mut stream: &TcpStream) {
 	if stack.len() > 0 {
-		println!("{}", stack.last().unwrap());
+		stream.write(format!("{}\n", stack.last().unwrap()).as_bytes()).expect("Error");
 	}
 	else {
-        println!("dc: stack empty");
-    }
+		stream.write("dc: stack empty".as_bytes()).expect("Error");
+	}
 }
-fn print_stack (stack: &Vec<i32>) {
-    let mut rev_stack = stack.clone();
-    rev_stack.reverse();
-    for num in rev_stack.iter() {
-        println!("{}", num);
-    }
+
+fn print_stack (stack: &Vec<i32>, mut stream: &TcpStream) {
+	let mut rev_stack = stack.clone();
+	rev_stack.reverse();
+	for num in rev_stack.iter() {
+		stream.write(format!("{}\n", num).as_bytes()).expect("Error");
+	}
+}
+
+fn quit(stream: &TcpStream) {
+	stream.shutdown(Shutdown::Both).expect("Error");
 }
