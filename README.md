@@ -5,4 +5,4 @@ a simple dc(unix) calculator over an http service.
 
 - run: ``` cargo run ```
 - connect: ``` nc localhost 8000 ```
-- use: use as the dc linux command
+- use: use like the dc linux command
