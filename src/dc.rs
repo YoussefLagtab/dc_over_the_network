@@ -64,11 +64,11 @@ fn multiply (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
 	stack
 }
 
-fn divide (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
+fn devide (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
 	if stack.len() >= 2 {
 		let n1 : i32 = stack.pop().unwrap();
 		let n2 : i32 = stack.pop().unwrap();
-		stack.push(n2 + n1);
+		stack.push(n2 / n1);
 	}
 	else {
 		stream.write("dc: stack empty".as_bytes()).expect("Error");
@@ -80,7 +80,7 @@ fn modular (mut stack: Vec<i32>, mut stream: &TcpStream) -> Vec<i32> {
 	if stack.len() >= 2 {
 		let n1 : i32 = stack.pop().unwrap();
 		let n2 : i32 = stack.pop().unwrap();
-		stack.push(n2 + n1);
+		stack.push(n2 % n1);
 	}
 	else {
 		stream.write("dc: stack empty".as_bytes()).expect("Error");
